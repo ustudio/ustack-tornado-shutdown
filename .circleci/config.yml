@@ -115,6 +115,7 @@ jobs:
       - run:
           name: Publish to PyPI
           command: |
+            . venv/bin/activate
             python setup.py sdist
             twine upload --username $PYPI_USERNAME --password $PYPI_PASSWORD dist/*
 
