@@ -22,4 +22,12 @@ def handle_signal(server, ioloop, signum, frame):
 
 
 def on_sigterm(server, ioloop):
+    """Shut down server and ioloop when SIGTERM signal is received.
+
+    The server may be None, in which case only the ioloop is stopped on SIGTERM.
+
+    If the server is not None, it will be stopped, first, and then the ioloop will be stopped two
+    seconds later.
+    """
+
     signal.signal(signal.SIGTERM, functools.partial(handle_signal, server, ioloop))
