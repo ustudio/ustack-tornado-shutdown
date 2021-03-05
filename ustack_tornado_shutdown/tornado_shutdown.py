@@ -15,7 +15,10 @@ def handle_signal(server, ioloop, signum, frame):
         server.stop()
         ioloop.call_later(2, stop_ioloop)
 
-    ioloop.add_callback_from_signal(stop_server)
+    if server is None:
+        ioloop.add_callback_from_signal(stop_ioloop)
+    else:
+        ioloop.add_callback_from_signal(stop_server)
 
 
 def on_sigterm(server, ioloop):

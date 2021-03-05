@@ -35,3 +35,22 @@ class TestTornadoShutdown(unittest.TestCase):
         mock_ioloop.call_later.call_args[0][1]()
 
         mock_ioloop.stop.assert_called_once_with()
+
+    @mock.patch("signal.signal")
+    def test_on_sigterm_shuts_down_ioloop_when_server_is_none(
+            self, mock_signal):
+        mock_ioloop = mock.Mock()
+
+        tornado_shutdown.on_sigterm(None, mock_ioloop)
+
+        mock_signal.assert_called_once_with(signal.SIGTERM, mock.ANY)
+
+        # Simulate the OS calling the signal handler
+        mock_signal.call_args[0][1]("ignored", "also-ignored")
+
+        mock_ioloop.add_callback_from_signal.assert_called_once_with(mock.ANY)
+
+        # Simulate the IO loop calling the callback
+        mock_ioloop.add_callback_from_signal.call_args[0][0]()
+
+        mock_ioloop.stop.assert_called_once_with()
