@@ -5,7 +5,7 @@ except ImportError:
 
 
 setup(name="ustack-tornado-shutdown",
-      version="0.1.0",
+      version="0.2.0",
       description="Library for gracefully terminating a Tornado server on SIGTERM",
       url="https://github.com/ustudio/ustack-tornado-shutdown",
       packages=["ustack_tornado_shutdown"],
