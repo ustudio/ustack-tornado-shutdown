@@ -88,7 +88,7 @@ jobs:
 
   publish:
     docker:
-      - image: circleci/python:3.6
+      - image: cimg/python:3.9
 
     working_directory: ~/repo
 
