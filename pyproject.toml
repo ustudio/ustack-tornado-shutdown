@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "ustack-tornado-shutdown"
+version = "1.0.0"
+description = "Library for gracefully terminating a Tornado server on SIGTERM"
+authors = ["uStudio Developers <dev@ustudio.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+mypy = "^0.950"
+flake8 = "^4.0.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
