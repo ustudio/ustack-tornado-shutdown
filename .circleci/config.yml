@@ -1,87 +1,52 @@
-# Python CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-python/ for more details
-#
 version: 2
 jobs:
-  test-py36:
+  test-py39:
     docker:
-      - image: circleci/python:3.6
+      - image: cimg/python:3.9
 
     working_directory: ~/repo
 
     steps:
       - checkout
 
-      # Download and cache dependencies
+      - run:
+          name: Save Python Version
+          command: |
+            python --version > pythonversion
+
       - restore_cache:
           keys:
-          - v1-py36-dependencies-
+          - v1-python-{{ checksum "pythonversion" }}-dependencies-{{ checksum "poetry.lock" }}
 
       - run:
           name: install dependencies
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install nose
+            poetry install
+
             mkdir -p test-reports
 
       - save_cache:
           paths:
-            - ./venv
-          key: v1-py36-dependencies-
+            - ~/.cache/pypoetry/virtualenvs
+          key: v1-python-{{ checksum "pythonversion" }}-dependencies-{{ checksum "poetry.lock" }}
 
-      # run tests!
       - run:
           name: run tests
           command: |
-            . venv/bin/activate
-            nosetests --verbose --with-xunit --xunit-file=test-reports/nosetests.xml
+            poetry run pytest --verbose --junit-xml=test-reports/pytest.xml
+
+      - run:
+          name: run lint
+          command: |
+            poetry run flake8 | tee test-reports/flake8-errors
+
+      - run:
+          name: run typechecks
+          command: |
+            poetry run mypy --junit-xml=test-reports/mypy.xml
 
       - store_artifacts:
           path: test-reports
-          destination: test-reports-py36
-
-      - store_test_results:
-          path: test-reports
-
-  test-py27:
-    docker:
-      - image: circleci/python:2.7
-
-    working_directory: ~/repo
-
-    steps:
-      - checkout
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-py27-dependencies-
-
-      - run:
-          name: install dependencies
-          command: |
-            python -m virtualenv venv
-            . venv/bin/activate
-            pip install nose mock
-            mkdir -p test-reports
-
-      - save_cache:
-          paths:
-            - ./venv
-          key: v1-py27-dependencies-
-
-      # run tests!
-      - run:
-          name: run tests
-          command: |
-            . venv/bin/activate
-            nosetests --verbose --with-xunit --xunit-file=test-reports/nosetests.xml
-
-      - store_artifacts:
-          path: test-reports
-          destination: test-reports-py27
 
       - store_test_results:
           path: test-reports
@@ -95,46 +60,25 @@ jobs:
     steps:
       - checkout
 
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-publish-dependencies-
-
-      - run:
-          name: install dependencies
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install twine
-
-      - save_cache:
-          paths:
-            - ./venv
-          key: v1-publish-dependencies-
-
       - run:
           name: Publish to PyPI
           command: |
-            . venv/bin/activate
-            python setup.py sdist
-            twine upload --username $PYPI_USERNAME --password $PYPI_PASSWORD dist/*
+            export POETRY_HTTP_BASIC_PYPI_USERNAME=$PYPI_USERNAME
+            export POETRY_HTTP_BASIC_PYPI_PASSWORD=$PYPI_PASSWORD
+
+            poetry publish --build
 
 workflows:
   version: 2
   test-and-publish:
     jobs:
-      - test-py27:
-          filters:
-            tags:
-              only: /.*/
-      - test-py36:
+      - test-py39:
           filters:
             tags:
               only: /.*/
       - publish:
           requires:
-            - test-py27
-            - test-py36
+            - test-py39
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*.*/
