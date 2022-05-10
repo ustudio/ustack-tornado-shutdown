@@ -6,6 +6,12 @@ from typing import Any, Optional
 
 
 async def on_sigterm(start_grace: Optional[Callable[[], Any]] = None) -> None:
+    """Wait for SIGTERM to be received and return.
+
+    If start_grace is specified, it will be called immediately on SIGTERM and
+    then the function will sleep for 2 seconds before returning.
+    """
+
     event = asyncio.Event()
 
     asyncio.get_running_loop().add_signal_handler(signal.SIGTERM, event.set)
