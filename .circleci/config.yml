@@ -21,7 +21,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            poetry install
+            poetry install --no-ansi
 
             mkdir -p test-reports
 
