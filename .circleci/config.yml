@@ -1,4 +1,8 @@
 version: 2
+parameters:
+  poetry_version:
+    type: string
+    default: "2.5.1"
 jobs:
   test-py39:
     docker:
@@ -21,6 +25,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
+            poetry self update --no-ansi -- << pipeline.parameters.poetry_version >>
             poetry install --no-ansi
 
             mkdir -p test-reports
@@ -63,6 +68,8 @@ jobs:
       - run:
           name: Publish to PyPI
           command: |
+            poetry self update --no-ansi -- << pipeline.parameters.poetry_version >>
+
             export POETRY_HTTP_BASIC_PYPI_USERNAME=$PYPI_USERNAME
             export POETRY_HTTP_BASIC_PYPI_PASSWORD=$PYPI_PASSWORD
 
