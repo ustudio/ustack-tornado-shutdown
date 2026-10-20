@@ -1,6 +1,6 @@
 [project]
 name = "ustack-tornado-shutdown"
-version = "1.0.0"
+version = "1.0.1"
 description = "Library for gracefully terminating a Tornado server on SIGTERM"
 authors = [{name = "uStudio Developers", email = "dev@ustudio.com"}]
 license = "MIT"
