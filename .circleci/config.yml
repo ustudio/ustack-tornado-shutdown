@@ -1,11 +1,15 @@
-version: 2
+version: 2.1
+parameters:
+  poetry_version:
+    type: string
+    default: "2.5.1"
 jobs:
-  test-py39:
+  test:
+    parameters:
+      python_version:
+        type: string
     docker:
-      - image: cimg/python:3.9
-
-    working_directory: ~/repo
-
+      - image: cimg/python:<< parameters.python_version >>
     steps:
       - checkout
 
@@ -21,6 +25,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
+            poetry self update --no-ansi -- << pipeline.parameters.poetry_version >>
             poetry install --no-ansi
 
             mkdir -p test-reports
@@ -52,17 +57,19 @@ jobs:
           path: test-reports
 
   publish:
+    parameters:
+      python_version:
+        type: string
     docker:
-      - image: cimg/python:3.9
-
-    working_directory: ~/repo
-
+      - image: cimg/python:<< parameters.python_version >>
     steps:
       - checkout
 
       - run:
           name: Publish to PyPI
           command: |
+            poetry self update --no-ansi -- << pipeline.parameters.poetry_version >>
+
             export POETRY_HTTP_BASIC_PYPI_USERNAME=$PYPI_USERNAME
             export POETRY_HTTP_BASIC_PYPI_PASSWORD=$PYPI_PASSWORD
 
@@ -72,13 +79,17 @@ workflows:
   version: 2
   test-and-publish:
     jobs:
-      - test-py39:
+      - test:
+          matrix:
+            parameters:
+              python_version: ["3.11", "3.12", "3.13", "3.14", "3.15"]
           filters:
             tags:
               only: /.*/
       - publish:
+          python_version: "3.15"
           requires:
-            - test-py39
+            - test
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*.*/
